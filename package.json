@@ -1,0 +1,21 @@
+{
+  "name": "oaks-lab-test",
+  "version": "1.0.0",
+  "description": "backend task for oaks lab.",
+  "main": "index.ts",
+  "scripts": {
+    "test": "jest"
+  },
+  "keywords": [
+    "oaks-lab",
+    "typescript",
+    "backend"
+  ],
+  "author": "bemijonathan",
+  "license": "ISC",
+  "dependencies": {
+    "dotenv": "^16.0.0",
+    "express": "^4.17.3",
+    "ts-node": "^10.6.0"
+  }
+}
