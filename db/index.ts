@@ -1,26 +1,10 @@
-import {Stages} from "./stages";
-
-export * from './startup'
-export * from './stages'
-export * from './steps'
-
 import glob from 'glob'
 
 
 export const initilizeDB = () => {
-    // select all the other files in the db folder and call their initilize function
-    // const dbFiles = require.context('./', true, /^(?!.*index||_base).*\.ts$/);
-
-    // dbFiles.keys().forEach(dbFile => {
-    //     const db = dbFiles(dbFile).default;
-    //     db.initilize();
-    // });
-
-    // console.log('dbFiles', dbFiles);
-
-
     new Promise((resolve, reject) => {
-        glob(__dirname + '/**/*.ts', function (err, res) {
+        // select all the other schema in the db folder and call their initilize function
+        glob(__dirname + '/../**/*.schema.ts', function (err, res) {
             if (err) {
                 reject(err)
             } else {
@@ -34,9 +18,17 @@ export const initilizeDB = () => {
             }
         })
     }).then(modules => {
-        // do stuff
-
-        console.log('modules', modules);
+        try {
+            //  for each module initialize the data to create the corresponding documents
+            (modules as any[]).forEach(schema => {
+                console.log('schema', schema);
+                let classObject = schema[Object.keys(schema)[0]]
+                new classObject(Object.keys(schema)[0])
+            })
+        } catch (error) {
+            console.log(error)
+            console.log((error as any).message, 'error creating database objects!!!')
+        }
     })
 
 }

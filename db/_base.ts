@@ -1,6 +1,5 @@
 import { BaseDB } from "../types/db";
 import * as fs from 'fs/promises';
-import * as path from "path";
 import * as crypto from "crypto";
 
 export class DataBase implements BaseDB {
@@ -9,13 +8,18 @@ export class DataBase implements BaseDB {
      * @param dbName
      */
     constructor(dbName: string) {
-        this.dbName = dbName
-        this.filePath = path.resolve(__dirname, `/database/${dbName}.json`)
-        this.initialize().then()
-    }
+        try {
+            this.dbName = dbName
+            this.filePath = __dirname + `/database/${dbName}.json`
+            this.initialize().then()
+        } catch (error) {
+            console.log(error)
+        }
+    };
 
-    dbName: string
-    private filePath: string
+
+    dbName!: string;
+    private filePath!: string;
 
     /**
      * intializes the creation of the DB
@@ -24,17 +28,20 @@ export class DataBase implements BaseDB {
      */
     private async initialize() {
         try {
-            const dbDetails = await fs.stat(this.filePath);
-            if (!dbDetails) {
-                await fs.writeFile(this.filePath, JSON.stringify({}))
+            await fs.access(this.filePath);
+        } catch (e: any & { code: string }) {
+            if (e.code === 'ENOENT') {
+                await fs.writeFile(this.filePath, JSON.stringify([])).catch(e => console.log(e))
             }
-        } catch (e) {
-            process.exit(1)
         }
     }
 
     private generateId() {
         return crypto.randomBytes(4).toString('hex');
+    }
+
+    private validateSchema<T>(schema: T): { success: boolean, message?: string } {
+        return { success: true };
     }
 
     /**
@@ -67,6 +74,10 @@ export class DataBase implements BaseDB {
     }
 
     public async insertItem<T>(data: T) {
+        const validateSchema = this.validateSchema(data)
+        if (!validateSchema.success) {
+            throw new Error(validateSchema.message as string);
+        }
         const newInfo = await this.readData()
         const id = this.generateId()
         newInfo.push({ id: id, ...data })
@@ -75,6 +86,10 @@ export class DataBase implements BaseDB {
     }
 
     public async updateItem<T>(id: string | number, data: T) {
+        const validateSchema = this.validateSchema(data)
+        if (!validateSchema.success) {
+            throw new Error(validateSchema.message as string);
+        }
         const newInfo = await this.readData()
         const index = newInfo.findIndex((d: { id: string | number }) => d.id === id)
         newInfo[index] = { id: id, ...data }

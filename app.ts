@@ -1,7 +1,8 @@
-import express from "express"
+import express, { Request, Response } from "express"
 import { config } from "dotenv";
 import { initilizeDB } from "./db";
 import { ERROR_CODES } from "./types/app";
+import routes from "./api/v1/index.routes";
 
 config()
 
@@ -15,7 +16,7 @@ export class App {
         this.initializeDB();
         this.initializeMiddlewares();
         this.initializeRoutes();
-        // this.initializeErrorHandling();
+        this.initializeErrorHandling();
     }
 
     public listen() {
@@ -36,7 +37,7 @@ export class App {
     }
 
     private initializeRoutes() {
-        // this.app.use('/api/', routes());
+        this.app.use('/v1/api/', routes);
 
         this.app.all('*', (req, res) => {
             return res.status(404).json({
@@ -53,4 +54,11 @@ export class App {
     private async initializeDB() {
         initilizeDB();
     }
+
+    private initializeErrorHandling() {
+        this.app.on('error', (error) => {
+            console.log(error)
+        });
+    }
+
 }
