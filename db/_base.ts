@@ -16,8 +16,9 @@ export class DataBase implements BaseDB {
             console.log(error)
         }
     };
-
-
+    tableSchema() {
+        return {}
+    }
     dbName!: string;
     private filePath!: string;
 
@@ -40,14 +41,16 @@ export class DataBase implements BaseDB {
         return crypto.randomBytes(4).toString('hex');
     }
 
-    private validateSchema<T>(schema: T): { success: boolean, message?: string } {
-        return { success: true };
+    private validateSchema<T>(schema: T) {
+        const tableSchema = this.tableSchema() as any
+        const schemaKeys = Object.keys(schema)
+        for (const key of schemaKeys) {
+            if (typeof (schema as any)[key] !== tableSchema[key]) {
+                throw new Error(`${key} is not a valid type`)
+            }
+        }
     }
 
-    /**
-     *
-     * @private
-     */
     private async readData() {
         const data = await fs.readFile(this.filePath)
         return JSON.parse(data.toString())
@@ -74,10 +77,7 @@ export class DataBase implements BaseDB {
     }
 
     public async insertItem<T>(data: T) {
-        const validateSchema = this.validateSchema(data)
-        if (!validateSchema.success) {
-            throw new Error(validateSchema.message as string);
-        }
+        this.validateSchema(data)
         const newInfo = await this.readData()
         const id = this.generateId()
         newInfo.push({ id: id, ...data })
@@ -86,10 +86,7 @@ export class DataBase implements BaseDB {
     }
 
     public async updateItem<T>(id: string | number, data: T) {
-        const validateSchema = this.validateSchema(data)
-        if (!validateSchema.success) {
-            throw new Error(validateSchema.message as string);
-        }
+        this.validateSchema(data)
         const newInfo = await this.readData()
         const index = newInfo.findIndex((d: { id: string | number }) => d.id === id)
         newInfo[index] = { id: id, ...data }

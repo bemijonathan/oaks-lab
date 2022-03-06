@@ -7,12 +7,21 @@ export interface IStartup {
     stageCount: number
 }
 
-export class StartUp extends DataBase implements IStartup {
+class StartUp extends DataBase {
     constructor(database: string) {
         super(database);
 
     }
-    name!: string;
-    token!: string;
-    stageCount!: number;
+    tableSchema() {
+        return {
+            name: 'string',
+            token: 'string',
+            stageCount: 'number',
+            createdAt: 'string',
+            updatedAt: 'string',
+            createdBy: 'string'
+        }
+    }
 }
+
+export const startUpSchema = new StartUp('startup')

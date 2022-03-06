@@ -1,14 +1,30 @@
-import { DataBase } from "../../../db/_base";
+import { DataBase } from "@/db/_base";
 
 
-export interface IStages {
-    name: string
-    token: string
-    stageCount: number
+export interface IStage {
+    name: string,
+    subStages: [],
+    createdAt: string,
+    updatedAt: string,
 }
 
-export class Stages extends DataBase {
+class StageSchema extends DataBase {
     constructor(database: string) {
         super(database);
     }
+
+    tableSchema() {
+        return {
+            name: 'string',
+            token: 'string',
+            stageCount: 'number',
+            createdAt: 'string',
+            updatedAt: 'string',
+            createdBy: 'string'
+        }
+    }
+
 }
+
+export const stageSchema = new StageSchema('stage')
+

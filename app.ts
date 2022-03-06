@@ -1,8 +1,8 @@
 import express, { Request, Response } from "express"
 import { config } from "dotenv";
 import { initilizeDB } from "./db";
-import { ERROR_CODES } from "./types/app";
-import routes from "./api/v1/index.routes";
+import { STATUS_CODES } from "./types/app";
+import { routes } from "./api/v1/index.routes";
 
 config()
 
@@ -37,13 +37,13 @@ export class App {
     }
 
     private initializeRoutes() {
-        this.app.use('/v1/api/', routes);
+        this.app.use('/api/v1/', routes());
 
         this.app.all('*', (req, res) => {
             return res.status(404).json({
                 status: false,
                 error: 'not_found',
-                message: ERROR_CODES.NOT_FOUND,
+                message: STATUS_CODES.NOT_FOUND,
                 path: req.url,
                 data: {}
             });

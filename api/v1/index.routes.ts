@@ -1,8 +1,8 @@
 import { Router } from "express";
-import StageRoute from "./stage/stage.route";
+import stageRouter from "./stage/stage.route"
 
-const router = Router();
-
-router.use("/stage", StageRoute)
-
-export default router;
+export const routes = (): Router => {
+    const router = Router();
+    router.use("/stage", stageRouter);
+    return router;
+}

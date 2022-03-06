@@ -1,6 +1,16 @@
 {
+  "ts-node": {
+    "transpileOnly": true,
+    "require": [  // set this so you dont need to use ts-node -r 
+      "tsconfig-paths/register"
+    ]
+  },   
   "compilerOptions": {
     /* Visit https://aka.ms/tsconfig.json to read more about this file */
+    "paths": {
+      "@/*": ["./*"],
+    },
+    "baseUrl": ".",
 
     /* Projects */
     // "incremental": true,                              /* Enable incremental compilation */

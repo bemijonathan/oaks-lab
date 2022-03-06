@@ -22,13 +22,11 @@ export const initilizeDB = () => {
             //  for each module initialize the data to create the corresponding documents
             (modules as any[]).forEach(schema => {
                 console.log('schema', schema);
-                let classObject = schema[Object.keys(schema)[0]]
-                new classObject(Object.keys(schema)[0])
+                schema[Object.keys(schema)[0]]
             })
         } catch (error) {
             console.log(error)
             console.log((error as any).message, 'error creating database objects!!!')
         }
     })
-
 }
