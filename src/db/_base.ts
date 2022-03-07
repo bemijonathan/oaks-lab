@@ -84,7 +84,7 @@ export class DataBase implements BaseDB {
         const id = this.generateId()
         newInfo.push({ id: id, ...data })
         await this.writeData(newInfo)
-        return newInfo
+        return data
     }
 
     public async updateItem<T>(id: string | number, data: T) {
@@ -93,7 +93,7 @@ export class DataBase implements BaseDB {
         const index = newInfo.findIndex((d: { id: string | number }) => d.id === id)
         newInfo[index] = { id: id, ...data }
         await this.writeData(newInfo)
-        return newInfo
+        return data
     }
 
     public async findOne<T>(query: T) {

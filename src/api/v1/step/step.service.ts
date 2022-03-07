@@ -36,6 +36,11 @@ class stepService {
         if (!stageExist) {
             return this.serviceResponse({}, false, STATUS_CODES.NOT_FOUND, 'Stage not found!')
         }
+        if (!stageExist.locked && stageExist.completed) {
+            return this.serviceResponse({}, false, STATUS_CODES.CONFLICT, 'Stage is completed!')
+        }
+
+
         const step = await this.stepSchema.insertItem({
             name: stepDetails.name.toLowerCase(),
             completed: false,
