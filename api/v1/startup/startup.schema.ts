@@ -1,14 +1,13 @@
 import { DataBase } from "@/db/_base";
 
 
-export interface IStep {
+export interface Istartup {
     id: string
     name: string
-    completed: boolean
-    stageId: string
+    startUpId: string
 }
 
-class Step extends DataBase {
+class startup extends DataBase {
     constructor(database: string) {
         super(database);
 
@@ -16,10 +15,9 @@ class Step extends DataBase {
     tableSchema() {
         return {
             name: 'string',
-            completed: 'boolean',
-            stageId: 'string'
+            startUpId: 'string'
         }
     }
 }
 
-export const stepSchema = new Step('step')
+export const startupSchema = new startup('startup')

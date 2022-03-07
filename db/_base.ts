@@ -13,7 +13,7 @@ export class DataBase implements BaseDB {
             this.filePath = __dirname + `/database/${dbName}.json`
             this.initialize().then()
         } catch (error) {
-            console.log(error)
+            console.log(error, 'initializing database')
         }
     };
     tableSchema() {
@@ -42,10 +42,11 @@ export class DataBase implements BaseDB {
     }
 
     private validateSchema<T>(schema: T) {
+
         const tableSchema = this.tableSchema() as any
         const schemaKeys = Object.keys(schema)
         for (const key of schemaKeys) {
-            if (typeof (schema as any)[key] !== tableSchema[key]) {
+            if (typeof (schema as any)[key] !== tableSchema[key] && key !== 'id') {
                 throw new Error(`${key} is not a valid type`)
             }
         }
@@ -114,11 +115,12 @@ export class DataBase implements BaseDB {
         const keys = Object.keys(query);
         const data = await this.getAll()
         const filteredResults = data.filter((e: any) => {
-            keys.forEach((key: string) => {
+            for (const key of keys) {
                 if (e[key] !== (query as any)[key]) {
                     return false
                 }
-            })
+                return true
+            }
         })
         return filteredResults
     }
@@ -128,11 +130,12 @@ export class DataBase implements BaseDB {
         const keys = Object.keys(query);
         const data = await this.getAll()
         const filteredResults = data.filter((e: any) => {
-            keys.forEach((key: string) => {
+            for (const key of keys) {
                 if (e[key] !== (query as any)[key]) {
                     return false
                 }
-            })
+                return true
+            }
         })
 
         await this.writeData(filteredResults)

@@ -55,7 +55,6 @@ class ApiResponse {
   }) {
 
     const { data, message, code, success } = serviceResponse;
-    console.log(serviceResponse)
     if (success) {
       return res.status(code || 200).send({
         data,

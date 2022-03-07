@@ -4,7 +4,7 @@ import { stageSchema } from "../stage/stage.schema";
 import { IStep, stepSchema } from "./step.schema";
 
 class stepService {
-    apiResponse = apiResponse
+    serviceResponse = apiResponse.serviceResponse
     stepSchema = stepSchema
 
     validateObject(data: IStep) {
@@ -12,48 +12,50 @@ class stepService {
             throw new Error('Name is required!')
         }
 
-        if (data.stageId) {
-            throw new Error('StageId is not required!')
+        if (!data.stageId) {
+            throw new Error('StageId is  required!')
         }
     }
 
     async getOne(id: string) {
         const step = await this.stepSchema.getById(id)
         if (!step) {
-            return this.apiResponse.serviceResponse({}, false, STATUS_CODES.NOT_FOUND, 'Step not found!')
+            return this.serviceResponse({}, false, STATUS_CODES.NOT_FOUND, 'Step not found!')
         }
-        return this.apiResponse.serviceResponse(step, true, STATUS_CODES.SUCCESS)
+        return this.serviceResponse(step, true, STATUS_CODES.SUCCESS)
     }
 
     async createOne(stepDetails: IStep, id: string) {
-        this.validateObject({ ...stepDetails, stageId: id });
-        const stepExist = await this.stepSchema.findOne({ name: stepDetails.name.toLowerCase(), stepId: id })
-        if (stepExist) {
-            return this.apiResponse.serviceResponse({}, false, STATUS_CODES.CONFLICT, 'Step already exist!')
+        this.validateObject({ ...stepDetails, stageId: id, completed: false });
+        const steps = await this.stepSchema.findMany({ name: stepDetails.name.toLowerCase() })
+        const stageIds = steps.map((e: IStep) => e.stageId)
+        if (steps && stageIds.includes(id)) {
+            return this.serviceResponse({}, false, STATUS_CODES.CONFLICT, 'Step already exist!')
         }
-        const stageExist = await this.stepSchema.getById(id)
+        const stageExist = await stageSchema.getById(id)
         if (!stageExist) {
-            return this.apiResponse.serviceResponse({}, false, STATUS_CODES.NOT_FOUND, 'Stage not found!')
-        }
-        if (stepDetails.stageId) {
-            return this.apiResponse.serviceResponse({}, false, STATUS_CODES.NOT_FOUND, 'Stage not found!')
+            return this.serviceResponse({}, false, STATUS_CODES.NOT_FOUND, 'Stage not found!')
         }
         const step = await this.stepSchema.insertItem({
             name: stepDetails.name.toLowerCase(),
             completed: false,
-            stepId: id
+            stageId: id
         })
-        return this.apiResponse.serviceResponse(step, true, STATUS_CODES.SUCCESS)
+        return this.serviceResponse(step, true, STATUS_CODES.SUCCESS)
     }
 
     async updateOne(id: string, stepDetails: IStep) {
         const stepExists = await this.stepSchema.getById(id)
         if (!stepExists) {
-            return this.apiResponse.serviceResponse({}, false, STATUS_CODES.NOT_FOUND, 'Step not found!')
+            return this.serviceResponse({}, false, STATUS_CODES.NOT_FOUND, 'Step not found!')
+        }
+        const stage = await stageSchema.getById(stepExists.stageId)
+        if (!stage) {
+            return this.serviceResponse({}, false, STATUS_CODES.NOT_FOUND, 'Stage not found!')
         }
         if (stepDetails.completed) {
             // get all the step with this stage Id
-            const steps = await this.stepSchema.findMany({ stageId: id })
+            const steps = await this.stepSchema.findMany({ stageId: stepExists.stageId })
 
             // // find the index of the current step
             const currentStepIndex = steps.findIndex((step: IStep) => step.id === id)
@@ -63,30 +65,25 @@ class stepService {
 
             // // check if the previous step is completed
 
-            if (previousStepIndex > 0 && !steps[previousStepIndex].completed) {
-                return this.apiResponse.serviceResponse({}, false, STATUS_CODES.BAD_REQUEST, 'Previous step is not completed!')
+            if (previousStepIndex >= 0 && !steps[previousStepIndex].completed) {
+                return this.serviceResponse({}, false, STATUS_CODES.BAD_REQUEST, 'Previous step is not completed!')
             }
             // if currentStepIndex is the last step then complete the stage
-
             if (currentStepIndex === steps.length - 1) {
-                const stage = await stageSchema.getById(id)
-                if (!stage) {
-                    return this.apiResponse.serviceResponse({}, false, STATUS_CODES.NOT_FOUND, 'Stage not found!')
-                }
-                await stageSchema.updateItem(id, { completed: true })
+                await stageSchema.updateItem(stepExists.stageId, { ...stage, completed: true, locked: false })
             }
         }
-        const step = await this.stepSchema.updateItem(id, stepDetails)
-        return this.apiResponse.serviceResponse(step, true, STATUS_CODES.SUCCESS)
+        const step = await this.stepSchema.updateItem(id, { ...stepExists, ...stepDetails })
+        return this.serviceResponse(step, true, STATUS_CODES.SUCCESS)
     }
 
     async deleteOne(id: string) {
         const step = await this.stepSchema.getById(id)
         if (!step) {
-            return this.apiResponse.serviceResponse({}, false, STATUS_CODES.NOT_FOUND, 'Step not found!')
+            return this.serviceResponse({}, false, STATUS_CODES.NOT_FOUND, 'Step not found!')
         }
         const deletedItem = await this.stepSchema.deleteItem(id);
-        return this.apiResponse.serviceResponse(deletedItem, true, STATUS_CODES.SUCCESS)
+        return this.serviceResponse(deletedItem, true, STATUS_CODES.SUCCESS)
     }
 }
 

@@ -1,13 +1,14 @@
 import { STATUS_CODES } from "@/types/app";
 import { apiResponse } from "@/utils/api-responses";
+import { startupSchema } from "../startup/startup.schema";
 import { stepSchema } from "../step/step.schema";
 import { IStage, stageSchema } from "./stage.schema";
 
 class stageService {
-    apiResponse = apiResponse
+    serviceResponse = apiResponse.serviceResponse
     stageSchema = stageSchema
 
-    validateObject(data: IStage) {
+    private validateObject(data: IStage) {
         if (!data.name) {
             throw new Error('Name is required!')
         }
@@ -21,41 +22,59 @@ class stageService {
                 return stage
             })
         )
-        return this.apiResponse.serviceResponse(stages, true, STATUS_CODES.SUCCESS)
+        return this.serviceResponse(stages, true, STATUS_CODES.SUCCESS)
     }
 
     async getOne(id: string) {
         const stage = await this.stageSchema.getById(id)
         if (!stage) {
-            return this.apiResponse.serviceResponse({}, false, STATUS_CODES.NOT_FOUND, 'Stage not found!')
+            return this.serviceResponse({}, false, STATUS_CODES.NOT_FOUND, 'Stage not found!')
         }
         stage.steps = await stepSchema.findMany({ stageId: id })
-        return this.apiResponse.serviceResponse(stage, true, STATUS_CODES.SUCCESS)
+        return this.serviceResponse(stage, true, STATUS_CODES.SUCCESS)
     }
 
-    async createOne(stageDetails: IStage) {
+    async createOne(stageDetails: IStage, id: string) {
         this.validateObject(stageDetails);
-        const stageExist = await this.stageSchema.findOne({ name: stageDetails.name.toLowerCase() })
-        if (stageExist) {
-            return this.apiResponse.serviceResponse({}, false, STATUS_CODES.CONFLICT, 'Stage already exist!')
+        const stages = await this.stageSchema.findMany({ name: stageDetails.name.toLowerCase() })
+        const startUpIds = stages.map((e: IStage) => e.startUpId)
+        if (stages && startUpIds.includes(id)) {
+            return this.serviceResponse({}, false, STATUS_CODES.CONFLICT, 'Stage already exist!')
         }
-        const stage = await this.stageSchema.insertItem({ name: stageDetails.name.toLowerCase(), completed: false })
-        return this.apiResponse.serviceResponse(stage, true, STATUS_CODES.SUCCESS)
+        const startUp = await startupSchema.getById(id);
+        if (!startUp) {
+            return this.serviceResponse({}, false, STATUS_CODES.NOT_FOUND, 'Startup not found!')
+        }
+        const stage = await this.stageSchema.insertItem({
+            name: stageDetails.name.toLowerCase(),
+            completed: false,
+            locked: true,
+            startUpId: id
+        })
+        return this.serviceResponse(stage, true, STATUS_CODES.SUCCESS)
     }
 
     async updateOne(id: string, stageDetails: IStage) {
-        const stage = await this.stageSchema.updateItem(id, { name: stageDetails })
-        return this.apiResponse.serviceResponse(stage, true, STATUS_CODES.SUCCESS)
+        const stageExists = await this.stageSchema.getById(id)
+        if (!stageExists) {
+            return this.serviceResponse({}, false, STATUS_CODES.NOT_FOUND, 'Step not found!')
+        }
+        if (stageDetails.completed) {
+            if (stageDetails.locked) {
+                return this.serviceResponse({}, false, STATUS_CODES.CONFLICT, 'Stage is locked!')
+            }
+        }
+        return this.serviceResponse(await this.stageSchema.updateItem(id, stageDetails), true, STATUS_CODES.SUCCESS)
     }
 
     async deleteOne(id: string) {
         const stage = await this.stageSchema.getById(id)
         if (!stage) {
-            return this.apiResponse.serviceResponse({}, false, STATUS_CODES.NOT_FOUND, 'Stage not found!')
+            return this.serviceResponse({}, false, STATUS_CODES.NOT_FOUND, 'Stage not found!')
         }
         const deletedItem = await this.stageSchema.deleteItem(id);
         await stepSchema.deleteMany({ stageId: id })
-        return this.apiResponse.serviceResponse(deletedItem, true, STATUS_CODES.SUCCESS)
+        return this.serviceResponse(deletedItem, true, STATUS_CODES.SUCCESS)
     }
 }
 

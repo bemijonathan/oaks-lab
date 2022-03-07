@@ -7,6 +7,8 @@ export interface IStage {
     name: string,
     completed: boolean,
     steps: IStep[]
+    startUpId: string,
+    locked: boolean
 }
 
 class StageSchema extends DataBase {
@@ -18,6 +20,8 @@ class StageSchema extends DataBase {
         return {
             name: 'string',
             completed: 'boolean',
+            startUpId: 'string',
+            locked: 'boolean'
         }
     }
 
