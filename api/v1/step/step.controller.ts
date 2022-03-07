@@ -1,19 +1,11 @@
 
 import { apiResponse } from "@/utils/api-responses";
-import stageService from "./stage.service";
+import stepService from "./step.service";
 
 
-export class StageController {
+export class StepController {
     private apiResponse = apiResponse
-    private service = stageService
-    public getAll = async (req: any, res: any, next: any) => {
-        try {
-            const serviceResponse = await this.service.getAll()
-            return this.apiResponse.successResponse(res, serviceResponse)
-        } catch (error) {
-            return this.apiResponse.errorResponse(res, error as Error);
-        }
-    }
+    private service = stepService
 
     public getOne = async (req: any, res: any, next: any) => {
         try {
@@ -35,7 +27,7 @@ export class StageController {
 
     public createOne = async (req: any, res: any, next: any) => {
         try {
-            const serviceResponse = await this.service.createOne(req.body)
+            const serviceResponse = await this.service.createOne(req.body, req.params.id)
             return this.apiResponse.successResponse(res, serviceResponse)
         } catch (error) {
             return this.apiResponse.errorResponse(res, error as Error);
@@ -54,4 +46,4 @@ export class StageController {
 
 
 
-export const stageController = new StageController()
+export const stepController = new StepController()

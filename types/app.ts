@@ -10,5 +10,6 @@ export enum STATUS_CODES {
     NOT_FOUND = 404,
     CREATED = 201,
     SUCCESS = 200,
-    SERVER_ERROR = 500
+    SERVER_ERROR = 500,
+    CONFLICT = 409
 }

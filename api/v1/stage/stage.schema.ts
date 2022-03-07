@@ -1,11 +1,12 @@
 import { DataBase } from "@/db/_base";
+import { IStep } from "../step/step.schema";
 
 
 export interface IStage {
+    id: string;
     name: string,
-    subStages: [],
-    createdAt: string,
-    updatedAt: string,
+    completed: boolean,
+    steps: IStep[]
 }
 
 class StageSchema extends DataBase {
@@ -16,11 +17,7 @@ class StageSchema extends DataBase {
     tableSchema() {
         return {
             name: 'string',
-            token: 'string',
-            stageCount: 'number',
-            createdAt: 'string',
-            updatedAt: 'string',
-            createdBy: 'string'
+            completed: 'boolean',
         }
     }
 

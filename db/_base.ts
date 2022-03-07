@@ -72,8 +72,9 @@ export class DataBase implements BaseDB {
 
     public async deleteItem(id: string | number) {
         const data = await this.readData();
-        data.filter((data: { id: string | number; }) => data.id != id)
-        await this.writeData(data)
+        const newData = data.filter((data: { id: string | number; }) => data.id != id)
+        await this.writeData(newData)
+        return {} as any
     }
 
     public async insertItem<T>(data: T) {
@@ -92,5 +93,50 @@ export class DataBase implements BaseDB {
         newInfo[index] = { id: id, ...data }
         await this.writeData(newInfo)
         return newInfo
+    }
+
+    public async findOne<T>(query: T) {
+        const keys = Object.keys(query);
+        const data = await this.getAll()
+        const filteredResults = data.find((e: any) => {
+            for (const key of keys) {
+                if (e[key] !== (query as any)[key]) {
+                    return false
+                }
+                return true
+            }
+        })
+        return filteredResults
+    }
+
+    public async findMany<T>(query: T) {
+        // find using many query options
+        const keys = Object.keys(query);
+        const data = await this.getAll()
+        const filteredResults = data.filter((e: any) => {
+            keys.forEach((key: string) => {
+                if (e[key] !== (query as any)[key]) {
+                    return false
+                }
+            })
+        })
+        return filteredResults
+    }
+
+    public async deleteMany<T>(query: T) {
+        // find using many query options
+        const keys = Object.keys(query);
+        const data = await this.getAll()
+        const filteredResults = data.filter((e: any) => {
+            keys.forEach((key: string) => {
+                if (e[key] !== (query as any)[key]) {
+                    return false
+                }
+            })
+        })
+
+        await this.writeData(filteredResults)
+
+        return filteredResults
     }
 }

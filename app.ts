@@ -12,9 +12,9 @@ export class App {
 
     constructor(port: number) {
         this.app = express();
+        this.initializeMiddlewares();
         this.port = port;
         this.initializeDB();
-        this.initializeMiddlewares();
         this.initializeRoutes();
         this.initializeErrorHandling();
     }

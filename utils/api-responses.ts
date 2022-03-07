@@ -6,39 +6,64 @@ type meta = {
 
 
 class ApiResponse {
-  serviceResponse(data: any, success: boolean, code: number): {
+  /**
+   * 
+   * @param data response DAta
+   * @param success boolean
+   * @param code number status code
+   * @returns 
+   */
+  serviceResponse(data: any, success: boolean, code: number, message?: string): {
     data: any,
     success: boolean,
-    code: number
+    code: number,
+    message?: string
   } {
     return {
       data,
       success,
-      code
+      code,
+      message
     }
   }
 
-  errorResponse(res: any, error: Error, meta?: meta) {
+  /**
+   * @param res Response
+   * @param meta serviceResponse
+   * @param error Error Object
+   * @returns 
+   */
+  errorResponse(res: any, meta?: meta, error?: Error) {
     // logger.error(error)
-    const { data, message, code } = meta || {};
-    return res.status(code).send({
-      data,
+    const { message, code } = meta || {};
+    return res.status(code || 500).send({
       message: error?.message || message || 'An Error Occured!',
       status: false
     })
   }
 
-  successResponse<T>(res: any, { data, message, code }: {
-    data: T,
+  /**
+   * @param res Response
+   * @param serviceResponse 
+   * @returns 
+   */
+  successResponse(res: any, serviceResponse: {
+    data: any,
     message?: string,
-    code?: number
+    code: number,
+    success: boolean
   }) {
 
-    return res.status(code || 200).send({
-      data,
-      message: message || 'Success',
-      status: true,
-    })
+    const { data, message, code, success } = serviceResponse;
+    console.log(serviceResponse)
+    if (success) {
+      return res.status(code || 200).send({
+        data,
+        message: message || 'Success',
+        status: true,
+      })
+    }
+    return apiResponse.errorResponse(res, { code, message: message || 'Something went wrong' });
   }
 }
 

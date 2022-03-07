@@ -1,5 +1,6 @@
 import { STATUS_CODES } from "@/types/app";
 import { apiResponse } from "@/utils/api-responses";
+import { stepSchema } from "../step/step.schema";
 import { IStage, stageSchema } from "./stage.schema";
 
 class stageService {
@@ -13,24 +14,48 @@ class stageService {
     }
 
     async getAll() {
-        const stages = await this.stageSchema.getAll()
+        let stages = await this.stageSchema.getAll()
+        stages = await Promise.all(
+            stages.map(async (stage: IStage) => {
+                stage.steps = await stepSchema.findMany({ stageId: stage.id })
+                return stage
+            })
+        )
         return this.apiResponse.serviceResponse(stages, true, STATUS_CODES.SUCCESS)
     }
 
     async getOne(id: string) {
         const stage = await this.stageSchema.getById(id)
+        if (!stage) {
+            return this.apiResponse.serviceResponse({}, false, STATUS_CODES.NOT_FOUND, 'Stage not found!')
+        }
+        stage.steps = await stepSchema.findMany({ stageId: id })
         return this.apiResponse.serviceResponse(stage, true, STATUS_CODES.SUCCESS)
     }
 
     async createOne(stageDetails: IStage) {
         this.validateObject(stageDetails);
-        const stage = await this.stageSchema.insertItem(stageDetails)
+        const stageExist = await this.stageSchema.findOne({ name: stageDetails.name.toLowerCase() })
+        if (stageExist) {
+            return this.apiResponse.serviceResponse({}, false, STATUS_CODES.CONFLICT, 'Stage already exist!')
+        }
+        const stage = await this.stageSchema.insertItem({ name: stageDetails.name.toLowerCase(), completed: false })
         return this.apiResponse.serviceResponse(stage, true, STATUS_CODES.SUCCESS)
     }
 
     async updateOne(id: string, stageDetails: IStage) {
-        const stage = await this.stageSchema.updateItem(id, stageDetails)
+        const stage = await this.stageSchema.updateItem(id, { name: stageDetails })
         return this.apiResponse.serviceResponse(stage, true, STATUS_CODES.SUCCESS)
+    }
+
+    async deleteOne(id: string) {
+        const stage = await this.stageSchema.getById(id)
+        if (!stage) {
+            return this.apiResponse.serviceResponse({}, false, STATUS_CODES.NOT_FOUND, 'Stage not found!')
+        }
+        const deletedItem = await this.stageSchema.deleteItem(id);
+        await stepSchema.deleteMany({ stageId: id })
+        return this.apiResponse.serviceResponse(deletedItem, true, STATUS_CODES.SUCCESS)
     }
 }
 
