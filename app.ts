@@ -1,8 +1,8 @@
 import express, { Request, Response } from "express"
 import { config } from "dotenv";
-import { initilizeDB } from "./db";
-import { STATUS_CODES } from "./types/app";
-import { routes } from "./api/v1/index.routes";
+import { initilizeDB } from "./src/db";
+import { STATUS_CODES } from "./src/types/app";
+import { routes } from "./src/api/v1/index.routes";
 
 config()
 

@@ -1,5 +1,5 @@
 
-import { apiResponse } from "@/utils/api-responses";
+import { apiResponse } from "@/src/utils/api-responses";
 import startupService from "./startup.service";
 
 

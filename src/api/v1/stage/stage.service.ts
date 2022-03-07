@@ -1,5 +1,5 @@
-import { STATUS_CODES } from "@/types/app";
-import { apiResponse } from "@/utils/api-responses";
+import { STATUS_CODES } from "@/src/types/app";
+import { apiResponse } from "@/src/utils/api-responses";
 import { startupSchema } from "../startup/startup.schema";
 import { stepSchema } from "../step/step.schema";
 import { IStage, stageSchema } from "./stage.schema";

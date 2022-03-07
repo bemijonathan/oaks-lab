@@ -1,4 +1,4 @@
-import { DataBase } from "@/db/_base";
+import { DataBase } from "@/src/db/_base";
 import { IStep } from "../step/step.schema";
 
 

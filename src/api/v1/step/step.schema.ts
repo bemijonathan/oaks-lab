@@ -1,4 +1,4 @@
-import { DataBase } from "@/db/_base";
+import { DataBase } from "@/src/db/_base";
 
 
 export interface IStep {
